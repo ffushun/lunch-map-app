@@ -5,7 +5,9 @@ import {
   clearPostMarkers,
   addPostMarker,
   clearTempMarker,
-  focusPost
+  focusPost,
+  focusCoordinates,
+  setTempMarker
 } from "./map.js";
 import {
   uploadPhoto,
@@ -42,6 +44,11 @@ const clearSearchBtn = document.getElementById("clear-search-btn");
 const searchSummary = document.getElementById("search-summary");
 const searchResultList = document.getElementById("search-result-list");
 
+const placeSearchInput = document.getElementById("place-search-input");
+const placeSearchBtn = document.getElementById("place-search-btn");
+const clearPlaceSearchBtn = document.getElementById("clear-place-search-btn");
+const placeSearchResultList = document.getElementById("place-search-result-list");
+
 const postFormPanel = document.getElementById("post-form-panel");
 const closeFormBtn = document.getElementById("close-form-btn");
 const posterNameInput = document.getElementById("poster-name");
@@ -75,6 +82,7 @@ let currentEditRating = 0;
 let selectedPost = null;
 let allPosts = [];
 let filteredPosts = [];
+let lastPlaceSearchAt = 0;
 
 initMap((lat, lng) => {
   latitudeInput.value = lat.toFixed(6);
@@ -160,7 +168,7 @@ function renderSearchResults(posts) {
     </div>
   `).join("");
 
-  const items = document.querySelectorAll(".search-result-item");
+  const items = document.querySelectorAll("#search-result-list .search-result-item");
   items.forEach((item) => {
     item.addEventListener("click", async () => {
       const postId = Number(item.dataset.id);
@@ -171,6 +179,91 @@ function renderSearchResults(posts) {
       await openDetailPanel(post);
     });
   });
+}
+
+async function searchPlacesWithNominatim(query) {
+  const now = Date.now();
+  const diff = now - lastPlaceSearchAt;
+  if (diff < 1100) {
+    await new Promise((resolve) => setTimeout(resolve, 1100 - diff));
+  }
+  lastPlaceSearchAt = Date.now();
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("q", query);
+  url.searchParams.set("limit", "8");
+  url.searchParams.set("addressdetails", "1");
+  url.searchParams.set("namedetails", "0");
+  url.searchParams.set("countrycodes", "jp");
+  url.searchParams.set("viewbox", "139.7600,35.6995,139.7805,35.6840");
+  url.searchParams.set("bounded", "1");
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      "Accept": "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Nominatim検索失敗: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+function renderPlaceSearchResults(items) {
+  if (!items.length) {
+    placeSearchResultList.innerHTML = `<div class="empty-text">候補が見つかりませんでした</div>`;
+    return;
+  }
+
+  placeSearchResultList.innerHTML = items.map((item, index) => {
+    const title = escapeHtml(item.display_name || item.name || "名称不明");
+    const type = escapeHtml(item.type || "");
+    const category = escapeHtml(item.category || "");
+    return `
+      <div class="search-result-item place-result-item" data-index="${index}">
+        <div class="search-result-title">${title}</div>
+        <div class="search-result-meta">${category} / ${type}</div>
+      </div>
+    `;
+  }).join("");
+
+  const resultEls = document.querySelectorAll(".place-result-item");
+  resultEls.forEach((el) => {
+    el.addEventListener("click", () => {
+      const idx = Number(el.dataset.index);
+      const item = items[idx];
+      if (!item) return;
+
+      const lat = Number(item.lat);
+      const lon = Number(item.lon);
+      const candidateName = extractCandidateName(item);
+
+      latitudeInput.value = lat.toFixed(6);
+      longitudeInput.value = lon.toFixed(6);
+      shopNameInput.value = candidateName;
+
+      setTempMarker(lat, lon);
+      focusCoordinates(lat, lon, 17);
+      openPostFormPanel();
+    });
+  });
+}
+
+function extractCandidateName(item) {
+  if (item.name) return item.name;
+
+  if (item.display_name) {
+    return item.display_name.split(",")[0].trim();
+  }
+
+  return "";
+}
+
+function clearPlaceSearchResults() {
+  placeSearchResultList.innerHTML = "";
 }
 
 function openPostFormPanel() {
@@ -416,6 +509,35 @@ searchPosterNameInput.addEventListener("keydown", (e) => {
 
 searchRatingMinInput.addEventListener("change", () => {
   applySearch();
+});
+
+placeSearchBtn.addEventListener("click", async () => {
+  try {
+    const query = placeSearchInput.value.trim();
+    if (!query) {
+      alert("場所検索ワードを入力してください");
+      return;
+    }
+
+    const fullQuery = `${query} 神田 東京`;
+    const results = await searchPlacesWithNominatim(fullQuery);
+    renderPlaceSearchResults(results);
+  } catch (err) {
+    console.error(err);
+    alert(`場所検索失敗: ${err.message}`);
+  }
+});
+
+clearPlaceSearchBtn.addEventListener("click", () => {
+  placeSearchInput.value = "";
+  clearPlaceSearchResults();
+});
+
+placeSearchInput.addEventListener("keydown", async (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    placeSearchBtn.click();
+  }
 });
 
 loginBtn.addEventListener("click", async () => {
