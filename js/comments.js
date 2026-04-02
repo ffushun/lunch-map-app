@@ -33,3 +33,12 @@ export async function createComment({
   if (error) throw error;
   return data;
 }
+
+export async function deleteComment(commentId) {
+  const { error } = await supabase
+    .from("comments")
+    .delete()
+    .eq("id", commentId);
+
+  if (error) throw error;
+}
