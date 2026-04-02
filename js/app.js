@@ -80,10 +80,17 @@ loginBtn.addEventListener("click", async () => {
   try {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
+
+    if (!email || !password) {
+      alert("メールアドレスとパスワードを入力してください");
+      return;
+    }
+
     await signIn(email, password);
     await refreshUI();
     alert("ログインしました");
   } catch (err) {
+    console.error(err);
     alert(`ログイン失敗: ${err.message}`);
   }
 });
@@ -93,6 +100,16 @@ signupBtn.addEventListener("click", async () => {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
+    if (!email || !password) {
+      alert("メールアドレスとパスワードを入力してください");
+      return;
+    }
+
+    if (password.length < 8) {
+      alert("パスワードは8文字以上にしてください");
+      return;
+    }
+
     const data = await signUp(email, password);
 
     if (data?.user) {
@@ -100,6 +117,7 @@ signupBtn.addEventListener("click", async () => {
     }
 
     alert("新規登録しました。メール確認が必要なら確認してください。");
+    await refreshUI();
   } catch (err) {
     console.error(err);
     alert(`新規登録失敗: ${err.message}`);
@@ -111,6 +129,7 @@ logoutBtn.addEventListener("click", async () => {
     await signOut();
     await refreshUI();
   } catch (err) {
+    console.error(err);
     alert(`ログアウト失敗: ${err.message}`);
   }
 });
@@ -161,6 +180,7 @@ postBtn.addEventListener("click", async () => {
     await loadPosts();
     alert("投稿しました");
   } catch (err) {
+    console.error(err);
     alert(`投稿失敗: ${err.message}`);
   }
 });
@@ -169,6 +189,7 @@ reloadBtn.addEventListener("click", async () => {
   try {
     await loadPosts();
   } catch (err) {
+    console.error(err);
     alert(`再読み込み失敗: ${err.message}`);
   }
 });
