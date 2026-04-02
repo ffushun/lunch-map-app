@@ -1,6 +1,7 @@
 let map;
 let postMarkersLayer;
 let tempMarker = null;
+let markerMap = new Map();
 
 const KANDA_CENTER = [35.69169, 139.77088];
 
@@ -42,12 +43,29 @@ export function clearPostMarkers() {
   if (postMarkersLayer) {
     postMarkersLayer.clearLayers();
   }
+  markerMap = new Map();
 }
 
 export function addPostMarker(post, onClick) {
   const marker = L.marker([post.latitude, post.longitude]);
   marker.on("click", () => onClick(post));
   marker.addTo(postMarkersLayer);
+  markerMap.set(post.id, marker);
+}
+
+export function focusPost(post) {
+  if (!map || !post) return;
+
+  map.setView([post.latitude, post.longitude], 17, {
+    animate: true
+  });
+
+  const marker = markerMap.get(post.id);
+  if (marker) {
+    setTimeout(() => {
+      marker.openPopup?.();
+    }, 150);
+  }
 }
 
 export function setTempMarker(lat, lng) {
