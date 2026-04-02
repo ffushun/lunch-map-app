@@ -18,6 +18,14 @@ export function initMap(onMapClick) {
   return map;
 }
 
+export function refreshMapSize() {
+  if (map) {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }
+}
+
 export function clearMarkers() {
   if (markersLayer) {
     markersLayer.clearLayers();
