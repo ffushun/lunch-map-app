@@ -3,22 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>昼食おすすめマップ</title>
+  <title>神田ランチマップ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
-  <header class="app-header">
-    <h1>昼食おすすめマップ</h1>
-    <div class="header-actions">
-      <span id="user-info"></span>
-      <button id="logout-btn" class="secondary">ログアウト</button>
-    </div>
-  </header>
-
-  <main class="container">
-    <section id="auth-section" class="card">
-      <h2>ログイン</h2>
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <h1>神田ランチマップ</h1>
       <div class="form-row">
         <label for="email">メール</label>
         <input type="email" id="email" placeholder="your@example.com" />
@@ -30,54 +22,101 @@
       <div class="button-row">
         <button id="login-btn">ログイン</button>
       </div>
-    </section>
+      <p class="note">アカウントは管理者が事前登録します</p>
+    </div>
+  </div>
 
-    <section id="app-section" class="hidden">
-      <div class="grid">
-        <div class="left-panel">
-          <div class="card">
-            <h2>新規投稿</h2>
-            <div class="form-row">
-              <label for="shop-name">店名</label>
-              <input type="text" id="shop-name" placeholder="例: ○○食堂" />
-            </div>
-            <div class="form-row">
-              <label for="comment">コメント</label>
-              <textarea id="comment" rows="4" placeholder="おすすめポイント"></textarea>
-            </div>
-            <div class="form-row">
-              <label for="latitude">緯度</label>
-              <input type="number" id="latitude" step="any" />
-            </div>
-            <div class="form-row">
-              <label for="longitude">経度</label>
-              <input type="number" id="longitude" step="any" />
-            </div>
-            <div class="form-row">
-              <label for="photo">写真</label>
-              <input type="file" id="photo" accept="image/*" />
-            </div>
-            <div class="button-row">
-              <button id="post-btn">投稿する</button>
-              <button id="clear-pin-btn" class="secondary">仮ピン解除</button>
-              <button id="reload-btn" class="secondary">再読み込み</button>
-            </div>
-            <p class="note">地図をクリックすると仮ピンが立ち、緯度・経度が自動入力されます</p>
-          </div>
+  <div id="app-screen" class="app-screen hidden">
+    <div id="map"></div>
 
-          <div class="card">
-            <h2>投稿一覧</h2>
-            <div id="post-list"></div>
-          </div>
-        </div>
+    <div class="top-bar">
+      <div class="brand">神田ランチマップ</div>
+      <div class="top-actions">
+        <span id="user-info"></span>
+        <button id="logout-btn" class="secondary">ログアウト</button>
+      </div>
+    </div>
 
-        <div class="map-panel card">
-          <h2>マップ（神田駅周辺）</h2>
-          <div id="map"></div>
+    <div id="hint-box" class="hint-box">
+      地図をクリックすると新しい投稿フォームが開きます
+    </div>
+
+    <div id="post-form-panel" class="side-panel hidden">
+      <div class="panel-header">
+        <h2>新規投稿</h2>
+        <button id="close-form-btn" class="icon-btn">×</button>
+      </div>
+
+      <div class="form-row">
+        <label for="poster-name">投稿者名</label>
+        <input type="text" id="poster-name" placeholder="例: 福田" />
+      </div>
+
+      <div class="form-row">
+        <label for="shop-name">店舗名</label>
+        <input type="text" id="shop-name" placeholder="例: ○○食堂" />
+      </div>
+
+      <div class="form-row">
+        <label>評価</label>
+        <div id="rating-stars" class="rating-stars">
+          <button type="button" class="star-btn" data-rating="1">☆</button>
+          <button type="button" class="star-btn" data-rating="2">☆</button>
+          <button type="button" class="star-btn" data-rating="3">☆</button>
+          <button type="button" class="star-btn" data-rating="4">☆</button>
+          <button type="button" class="star-btn" data-rating="5">☆</button>
         </div>
       </div>
-    </section>
-  </main>
+
+      <div class="form-row">
+        <label for="photo">写真</label>
+        <input type="file" id="photo" accept="image/*" />
+      </div>
+
+      <div class="form-row">
+        <label for="latitude">緯度</label>
+        <input type="number" id="latitude" step="any" readonly />
+      </div>
+
+      <div class="form-row">
+        <label for="longitude">経度</label>
+        <input type="number" id="longitude" step="any" readonly />
+      </div>
+
+      <div class="button-row">
+        <button id="save-post-btn">投稿する</button>
+        <button id="clear-pin-btn" class="secondary">仮ピン解除</button>
+      </div>
+    </div>
+
+    <div id="detail-panel" class="side-panel hidden">
+      <div class="panel-header">
+        <h2>投稿詳細</h2>
+        <button id="close-detail-btn" class="icon-btn">×</button>
+      </div>
+
+      <div id="detail-content" class="detail-content"></div>
+
+      <div class="comment-section">
+        <h3>コメント</h3>
+        <div id="comment-list" class="comment-list"></div>
+
+        <div class="form-row">
+          <label for="commenter-name">コメント投稿者名</label>
+          <input type="text" id="commenter-name" placeholder="例: 福田" />
+        </div>
+
+        <div class="form-row">
+          <label for="comment-text">コメント</label>
+          <textarea id="comment-text" rows="4" placeholder="コメントを入力"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button id="add-comment-btn">コメント追加</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
