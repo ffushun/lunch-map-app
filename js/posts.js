@@ -76,7 +76,6 @@ export async function deletePostWithPhoto(post) {
     throw new Error("削除対象の投稿が不正です");
   }
 
-  // 1. 画像削除
   if (post.photo_url) {
     const path = extractStoragePathFromPublicUrl(post.photo_url);
 
@@ -91,11 +90,31 @@ export async function deletePostWithPhoto(post) {
     }
   }
 
-  // 2. DB削除
   const { error: dbError } = await supabase
     .from("posts")
     .delete()
     .eq("id", post.id);
 
   if (dbError) throw dbError;
+}
+
+export async function updatePost({
+  postId,
+  posterName,
+  shopName,
+  rating
+}) {
+  const { data, error } = await supabase
+    .from("posts")
+    .update({
+      poster_name: posterName,
+      shop_name: shopName,
+      rating
+    })
+    .eq("id", postId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }
