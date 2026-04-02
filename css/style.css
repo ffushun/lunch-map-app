@@ -105,9 +105,16 @@ button.danger {
 }
 
 #map {
-  width: 100%;
-  height: 620px;
-  border-radius: 8px;
+  width: min(78vw, 620px);
+  height: min(78vw, 620px);
+  max-width: 620px;
+  max-height: 620px;
+  min-width: 320px;
+  min-height: 320px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 4px solid #d8e2f0;
 }
 
 .post-item {
@@ -151,6 +158,9 @@ button.danger {
   }
 
   #map {
-    height: 420px;
+    width: min(88vw, 520px);
+    height: min(88vw, 520px);
+    min-width: 280px;
+    min-height: 280px;
   }
 }
