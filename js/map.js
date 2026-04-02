@@ -1,22 +1,17 @@
 let map;
 let markersLayer;
 let tempMarker = null;
+let rangeCircle = null;
 
-// 神田駅周辺だけに固定
-const KANDA_BOUNDS = [
-  [35.6888, 139.7655], // south-west
-  [35.6968, 139.7760]  // north-east
-];
-
-const INITIAL_CENTER = [35.6918, 139.7708];
+// 神田駅中心
+const KANDA_CENTER = [35.69169, 139.77088];
+const RADIUS_METERS = 2000;
 
 export function initMap(onMapClick) {
   map = L.map("map", {
     zoomControl: true,
-    minZoom: 16,
+    minZoom: 13,
     maxZoom: 18,
-    maxBounds: KANDA_BOUNDS,
-    maxBoundsViscosity: 1.0,
     scrollWheelZoom: true,
     doubleClickZoom: false
   });
@@ -27,14 +22,26 @@ export function initMap(onMapClick) {
 
   markersLayer = L.layerGroup().addTo(map);
 
-  map.fitBounds(KANDA_BOUNDS, {
+  // 神田駅中心・半径2kmの円を表示
+  rangeCircle = L.circle(KANDA_CENTER, {
+    radius: RADIUS_METERS,
+    weight: 2,
+    fillOpacity: 0.08
+  }).addTo(map);
+
+  // 円全体が見えるように初期表示
+  map.fitBounds(rangeCircle.getBounds(), {
     padding: [20, 20]
   });
 
-  map.setView(INITIAL_CENTER, 16);
-
   map.on("click", (e) => {
     const { lat, lng } = e.latlng;
+
+    if (!isWithinAllowedRange(lat, lng)) {
+      alert("神田駅から半径2km以内を選択してください");
+      return;
+    }
+
     setTempMarker(lat, lng);
     onMapClick(lat, lng);
   });
@@ -43,10 +50,10 @@ export function initMap(onMapClick) {
 }
 
 export function refreshMapSize() {
-  if (map) {
+  if (map && rangeCircle) {
     setTimeout(() => {
       map.invalidateSize();
-      map.fitBounds(KANDA_BOUNDS, {
+      map.fitBounds(rangeCircle.getBounds(), {
         padding: [20, 20]
       });
     }, 100);
@@ -98,6 +105,15 @@ export function clearTempMarker() {
     tempMarker.remove();
     tempMarker = null;
   }
+}
+
+export function isWithinAllowedRange(lat, lng) {
+  if (!map) return false;
+
+  const center = L.latLng(KANDA_CENTER[0], KANDA_CENTER[1]);
+  const point = L.latLng(lat, lng);
+
+  return center.distanceTo(point) <= RADIUS_METERS;
 }
 
 function escapeHtml(str) {
