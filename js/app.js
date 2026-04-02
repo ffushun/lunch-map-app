@@ -1,6 +1,17 @@
-import { signUp, signIn, signOut, getCurrentUser, ensureProfile } from "./auth.js";
-import { initMap, refreshMapSize, clearMarkers, addMarker } from "./map.js";
-import { uploadPhoto, createLunchSpot, fetchLunchSpots } from "./posts.js";
+import { signIn, signOut, getCurrentUser } from "./auth.js";
+import {
+  initMap,
+  refreshMapSize,
+  clearMarkers,
+  addMarker,
+  clearTempMarker
+} from "./map.js";
+import {
+  uploadPhoto,
+  createLunchSpot,
+  fetchLunchSpots,
+  deleteLunchSpot
+} from "./posts.js";
 
 const authSection = document.getElementById("auth-section");
 const appSection = document.getElementById("app-section");
@@ -10,7 +21,6 @@ const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
 const loginBtn = document.getElementById("login-btn");
-const signupBtn = document.getElementById("signup-btn");
 const logoutBtn = document.getElementById("logout-btn");
 
 const shopNameInput = document.getElementById("shop-name");
@@ -20,6 +30,7 @@ const longitudeInput = document.getElementById("longitude");
 const photoInput = document.getElementById("photo");
 
 const postBtn = document.getElementById("post-btn");
+const clearPinBtn = document.getElementById("clear-pin-btn");
 const reloadBtn = document.getElementById("reload-btn");
 const postList = document.getElementById("post-list");
 
@@ -65,16 +76,46 @@ async function loadPosts() {
     const div = document.createElement("div");
     div.className = "post-item";
 
+    const canDelete = currentUser && spot.user_id === currentUser.id;
+
     div.innerHTML = `
       <h3>${escapeHtml(spot.shop_name)}</h3>
       <p>${escapeHtml(spot.comment || "")}</p>
       <p>緯度: ${spot.latitude} / 経度: ${spot.longitude}</p>
       <p>投稿日: ${new Date(spot.created_at).toLocaleString("ja-JP")}</p>
       ${spot.photo_url ? `<img class="post-thumb" src="${spot.photo_url}" alt="photo">` : ""}
+      <div class="post-actions">
+        ${canDelete ? `<button class="danger delete-btn" data-id="${spot.id}">削除</button>` : ""}
+      </div>
     `;
 
     postList.appendChild(div);
   }
+
+  bindDeleteButtons();
+}
+
+function bindDeleteButtons() {
+  const buttons = document.querySelectorAll(".delete-btn");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      try {
+        const id = Number(button.dataset.id);
+
+        if (!confirm("この投稿を削除しますか？")) {
+          return;
+        }
+
+        await deleteLunchSpot(id);
+        await loadPosts();
+        alert("削除しました");
+      } catch (err) {
+        console.error(err);
+        alert(`削除失敗: ${err.message}`);
+      }
+    });
+  });
 }
 
 loginBtn.addEventListener("click", async () => {
@@ -93,35 +134,6 @@ loginBtn.addEventListener("click", async () => {
   } catch (err) {
     console.error(err);
     alert(`ログイン失敗: ${err.message}`);
-  }
-});
-
-signupBtn.addEventListener("click", async () => {
-  try {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
-
-    if (!email || !password) {
-      alert("メールアドレスとパスワードを入力してください");
-      return;
-    }
-
-    if (password.length < 8) {
-      alert("パスワードは8文字以上にしてください");
-      return;
-    }
-
-    const data = await signUp(email, password);
-
-    if (data?.user) {
-      await ensureProfile(data.user);
-    }
-
-    alert("新規登録しました。メール確認が必要なら確認してください。");
-    await refreshUI();
-  } catch (err) {
-    console.error(err);
-    alert(`新規登録失敗: ${err.message}`);
   }
 });
 
@@ -154,7 +166,7 @@ postBtn.addEventListener("click", async () => {
     }
 
     if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
-      alert("緯度・経度を正しく入力してください");
+      alert("地図をクリックして投稿位置を選んでください");
       return;
     }
 
@@ -177,6 +189,7 @@ postBtn.addEventListener("click", async () => {
     latitudeInput.value = "";
     longitudeInput.value = "";
     photoInput.value = "";
+    clearTempMarker();
 
     await loadPosts();
     alert("投稿しました");
@@ -184,6 +197,12 @@ postBtn.addEventListener("click", async () => {
     console.error(err);
     alert(`投稿失敗: ${err.message}`);
   }
+});
+
+clearPinBtn.addEventListener("click", () => {
+  latitudeInput.value = "";
+  longitudeInput.value = "";
+  clearTempMarker();
 });
 
 reloadBtn.addEventListener("click", async () => {
