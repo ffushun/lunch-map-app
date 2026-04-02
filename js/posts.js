@@ -7,40 +7,50 @@ export async function uploadPhoto(file, userId) {
   const filePath = `${userId}/${Date.now()}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("lunch-photos")
+    .from("post-photos")
     .upload(filePath, file);
 
   if (uploadError) throw uploadError;
 
   const { data } = supabase.storage
-    .from("lunch-photos")
+    .from("post-photos")
     .getPublicUrl(filePath);
 
   return data.publicUrl;
 }
 
-export async function createLunchSpot({ userId, shopName, comment, latitude, longitude, photoUrl }) {
+export async function createPost({
+  userId,
+  posterName,
+  shopName,
+  rating,
+  latitude,
+  longitude,
+  photoUrl
+}) {
   const { data, error } = await supabase
-    .from("lunch_spots")
+    .from("posts")
     .insert([
       {
         user_id: userId,
+        poster_name: posterName,
         shop_name: shopName,
-        comment,
+        rating,
         latitude,
         longitude,
         photo_url: photoUrl
       }
     ])
-    .select();
+    .select()
+    .single();
 
   if (error) throw error;
   return data;
 }
 
-export async function fetchLunchSpots() {
+export async function fetchPosts() {
   const { data, error } = await supabase
-    .from("lunch_spots")
+    .from("posts")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -48,11 +58,11 @@ export async function fetchLunchSpots() {
   return data;
 }
 
-export async function deleteLunchSpot(id) {
+export async function deletePost(postId) {
   const { error } = await supabase
-    .from("lunch_spots")
+    .from("posts")
     .delete()
-    .eq("id", id);
+    .eq("id", postId);
 
   if (error) throw error;
 }
