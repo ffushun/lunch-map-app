@@ -58,11 +58,44 @@ export async function fetchPosts() {
   return data;
 }
 
-export async function deletePost(postId) {
-  const { error } = await supabase
+function extractStoragePathFromPublicUrl(photoUrl) {
+  if (!photoUrl) return null;
+
+  const marker = "/storage/v1/object/public/post-photos/";
+  const idx = photoUrl.indexOf(marker);
+
+  if (idx === -1) {
+    return null;
+  }
+
+  return photoUrl.substring(idx + marker.length);
+}
+
+export async function deletePostWithPhoto(post) {
+  if (!post || !post.id) {
+    throw new Error("削除対象の投稿が不正です");
+  }
+
+  // 1. 画像削除
+  if (post.photo_url) {
+    const path = extractStoragePathFromPublicUrl(post.photo_url);
+
+    if (path) {
+      const { error: storageError } = await supabase.storage
+        .from("post-photos")
+        .remove([path]);
+
+      if (storageError) {
+        throw storageError;
+      }
+    }
+  }
+
+  // 2. DB削除
+  const { error: dbError } = await supabase
     .from("posts")
     .delete()
-    .eq("id", postId);
+    .eq("id", post.id);
 
-  if (error) throw error;
+  if (dbError) throw dbError;
 }
