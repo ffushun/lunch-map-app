@@ -36,6 +36,10 @@ const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
 const userInfo = document.getElementById("user-info");
 
+const toggleSearchPanelBtn = document.getElementById("toggle-search-panel-btn");
+const closeSearchPanelBtn = document.getElementById("close-search-panel-btn");
+const searchPanel = document.getElementById("search-panel");
+
 const searchShopNameInput = document.getElementById("search-shop-name");
 const searchPosterNameInput = document.getElementById("search-poster-name");
 const searchRatingMinInput = document.getElementById("search-rating-min");
@@ -83,6 +87,22 @@ let selectedPost = null;
 let allPosts = [];
 let filteredPosts = [];
 let lastPlaceSearchAt = 0;
+
+function isMobile() {
+  return window.innerWidth <= 900;
+}
+
+function openSearchPanelMobile() {
+  if (isMobile()) {
+    searchPanel.classList.add("open");
+  }
+}
+
+function closeSearchPanelMobile() {
+  if (isMobile()) {
+    searchPanel.classList.remove("open");
+  }
+}
 
 initMap((lat, lng) => {
   latitudeInput.value = lat.toFixed(6);
@@ -177,6 +197,7 @@ function renderSearchResults(posts) {
 
       focusPost(post);
       await openDetailPanel(post);
+      closeSearchPanelMobile();
     });
   });
 }
@@ -194,7 +215,6 @@ async function searchPlacesWithNominatim(query) {
   url.searchParams.set("q", query);
   url.searchParams.set("limit", "8");
   url.searchParams.set("addressdetails", "1");
-  url.searchParams.set("namedetails", "0");
   url.searchParams.set("countrycodes", "jp");
   url.searchParams.set("viewbox", "139.7600,35.6995,139.7805,35.6840");
   url.searchParams.set("bounded", "1");
@@ -248,17 +268,14 @@ function renderPlaceSearchResults(items) {
       setTempMarker(lat, lon);
       focusCoordinates(lat, lon, 17);
       openPostFormPanel();
+      closeSearchPanelMobile();
     });
   });
 }
 
 function extractCandidateName(item) {
   if (item.name) return item.name;
-
-  if (item.display_name) {
-    return item.display_name.split(",")[0].trim();
-  }
-
+  if (item.display_name) return item.display_name.split(",")[0].trim();
   return "";
 }
 
@@ -488,8 +505,17 @@ editStarButtons.forEach((btn) => {
   });
 });
 
+toggleSearchPanelBtn?.addEventListener("click", () => {
+  openSearchPanelMobile();
+});
+
+closeSearchPanelBtn?.addEventListener("click", () => {
+  closeSearchPanelMobile();
+});
+
 searchBtn.addEventListener("click", () => {
   applySearch();
+  closeSearchPanelMobile();
 });
 
 clearSearchBtn.addEventListener("click", () => {
@@ -500,11 +526,17 @@ clearSearchBtn.addEventListener("click", () => {
 });
 
 searchShopNameInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") applySearch();
+  if (e.key === "Enter") {
+    applySearch();
+    closeSearchPanelMobile();
+  }
 });
 
 searchPosterNameInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") applySearch();
+  if (e.key === "Enter") {
+    applySearch();
+    closeSearchPanelMobile();
+  }
 });
 
 searchRatingMinInput.addEventListener("change", () => {
@@ -732,6 +764,12 @@ addCommentBtn.addEventListener("click", async () => {
   } catch (err) {
     console.error(err);
     alert(`コメント追加失敗: ${err.message}`);
+  }
+});
+
+window.addEventListener("resize", () => {
+  if (!isMobile()) {
+    searchPanel.classList.remove("open");
   }
 });
 
