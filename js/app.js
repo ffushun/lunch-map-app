@@ -38,6 +38,7 @@ async function refreshUI() {
       authSection.classList.add("hidden");
       appSection.classList.remove("hidden");
       userInfo.textContent = currentUser.email;
+      refreshMapSize();
       await loadPosts();
     } else {
       authSection.classList.remove("hidden");
