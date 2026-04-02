@@ -68,6 +68,11 @@ export function focusPost(post) {
   }
 }
 
+export function focusCoordinates(lat, lng, zoom = 17) {
+  if (!map) return;
+  map.setView([lat, lng], zoom, { animate: true });
+}
+
 export function setTempMarker(lat, lng) {
   if (!map) return;
 
