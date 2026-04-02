@@ -93,14 +93,15 @@ signupBtn.addEventListener("click", async () => {
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
-    const result = await signUp(email, password);
+    const data = await signUp(email, password);
 
-    if (result.user) {
-      await ensureProfile(result.user);
+    if (data?.user) {
+      await ensureProfile(data.user);
     }
 
     alert("新規登録しました。メール確認が必要なら確認してください。");
   } catch (err) {
+    console.error(err);
     alert(`新規登録失敗: ${err.message}`);
   }
 });
