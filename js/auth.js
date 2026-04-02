@@ -5,6 +5,7 @@ export async function signUp(email, password) {
     email,
     password
   });
+
   if (error) throw error;
   return data;
 }
@@ -14,6 +15,7 @@ export async function signIn(email, password) {
     email,
     password
   });
+
   if (error) throw error;
   return data;
 }
