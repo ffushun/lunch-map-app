@@ -82,6 +82,96 @@ body {
   gap: 12px;
 }
 
+.search-panel {
+  position: absolute;
+  top: 78px;
+  left: 16px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 120px auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-field.small {
+  min-width: 110px;
+}
+
+.search-field label {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.search-field input,
+.search-field select {
+  padding: 10px;
+  border: 1px solid #cfd7e3;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.search-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-summary {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #555;
+}
+
+.search-result-list {
+  margin-top: 10px;
+  max-height: 160px;
+  overflow-y: auto;
+  border-top: 1px solid #e3e8ef;
+  padding-top: 8px;
+}
+
+.search-result-item {
+  padding: 8px 6px;
+  border-bottom: 1px solid #eef2f6;
+  cursor: pointer;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: #f7faff;
+  border-radius: 8px;
+}
+
+.search-result-title {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.search-result-meta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #666;
+}
+
 .hint-box {
   position: absolute;
   left: 16px;
@@ -286,6 +376,16 @@ button.like-btn {
   font-size: 14px;
 }
 
+@media (max-width: 1100px) {
+  .search-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .search-buttons {
+    grid-column: span 2;
+  }
+}
+
 @media (max-width: 900px) {
   .side-panel {
     left: 12px;
@@ -294,6 +394,22 @@ button.like-btn {
     bottom: 12px;
     width: auto;
     max-height: 62vh;
+  }
+
+  .search-panel {
+    top: 120px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .search-buttons {
+    grid-column: auto;
   }
 
   .top-bar {
