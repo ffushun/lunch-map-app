@@ -10,12 +10,19 @@ import {
   uploadPhoto,
   createPost,
   fetchPosts,
-  deletePostWithPhoto
+  deletePostWithPhoto,
+  updatePost
 } from "./posts.js";
 import {
   fetchComments,
-  createComment
+  createComment,
+  deleteComment
 } from "./comments.js";
+import {
+  fetchLikes,
+  addLike,
+  removeLike
+} from "./likes.js";
 
 const loginScreen = document.getElementById("login-screen");
 const appScreen = document.getElementById("app-screen");
@@ -44,10 +51,18 @@ const commenterNameInput = document.getElementById("commenter-name");
 const commentTextInput = document.getElementById("comment-text");
 const addCommentBtn = document.getElementById("add-comment-btn");
 
+const editPostSection = document.getElementById("edit-post-section");
+const editPosterNameInput = document.getElementById("edit-poster-name");
+const editShopNameInput = document.getElementById("edit-shop-name");
+const saveEditPostBtn = document.getElementById("save-edit-post-btn");
+const cancelEditPostBtn = document.getElementById("cancel-edit-post-btn");
+
 const starButtons = Array.from(document.querySelectorAll(".star-btn"));
+const editStarButtons = Array.from(document.querySelectorAll(".edit-star-btn"));
 
 let currentUser = null;
 let currentRating = 0;
+let currentEditRating = 0;
 let selectedPost = null;
 let allPosts = [];
 
@@ -112,12 +127,33 @@ function resetPostForm() {
   clearTempMarker();
 }
 
+function openEditPostSection(post) {
+  editPostSection.classList.remove("hidden");
+  editPosterNameInput.value = post.poster_name ?? "";
+  editShopNameInput.value = post.shop_name ?? "";
+  currentEditRating = post.rating ?? 0;
+  renderEditStars();
+}
+
+function closeEditPostSection() {
+  editPostSection.classList.add("hidden");
+  editPosterNameInput.value = "";
+  editShopNameInput.value = "";
+  currentEditRating = 0;
+  renderEditStars();
+}
+
 async function openDetailPanel(post) {
   selectedPost = post;
   postFormPanel.classList.add("hidden");
   detailPanel.classList.remove("hidden");
 
   const canDelete = currentUser && post.user_id === currentUser.id;
+  const canEdit = currentUser && post.user_id === currentUser.id;
+
+  const likes = await fetchLikes(post.id);
+  const likeCount = likes.length;
+  const likedByMe = !!likes.find((x) => x.user_id === currentUser?.id);
 
   detailContent.innerHTML = `
     <h2 class="detail-title">${escapeHtml(post.shop_name)}</h2>
@@ -125,9 +161,47 @@ async function openDetailPanel(post) {
     <div class="detail-meta">評価: ${renderStarsText(post.rating)}</div>
     <div class="detail-meta">投稿日: ${formatDate(post.created_at)}</div>
     <div class="detail-meta">座標: ${post.latitude}, ${post.longitude}</div>
+    <div class="button-row">
+      <button id="like-btn" class="like-btn">${likedByMe ? "いいね取り消し" : "いいね"}</button>
+      <span class="detail-meta">いいね: ${likeCount}</span>
+      ${canEdit ? `<button id="edit-post-btn" class="secondary">編集</button>` : ""}
+      ${canDelete ? `<button id="delete-post-btn" class="danger">この投稿を削除</button>` : ""}
+    </div>
     ${post.photo_url ? `<img class="detail-photo" src="${post.photo_url}" alt="photo">` : ""}
-    ${canDelete ? `<div class="button-row"><button id="delete-post-btn" class="danger">この投稿を削除</button></div>` : ""}
   `;
+
+  const likeBtn = document.getElementById("like-btn");
+  likeBtn.addEventListener("click", async () => {
+    try {
+      if (!currentUser) {
+        alert("ログインしてください");
+        return;
+      }
+
+      if (likedByMe) {
+        await removeLike(post.id, currentUser.id);
+      } else {
+        await addLike(post.id, currentUser.id);
+      }
+
+      const refreshed = await reloadSelectedPost(post.id);
+      if (refreshed) {
+        await openDetailPanel(refreshed);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(`いいね更新失敗: ${err.message}`);
+    }
+  });
+
+  if (canEdit) {
+    const editBtn = document.getElementById("edit-post-btn");
+    editBtn.addEventListener("click", () => {
+      openEditPostSection(post);
+    });
+  } else {
+    closeEditPostSection();
+  }
 
   if (canDelete) {
     const deleteBtn = document.getElementById("delete-post-btn");
@@ -140,6 +214,7 @@ async function openDetailPanel(post) {
         await deletePostWithPhoto(post);
         detailPanel.classList.add("hidden");
         selectedPost = null;
+        closeEditPostSection();
         await loadPosts();
         alert("削除しました");
       } catch (err) {
@@ -152,9 +227,19 @@ async function openDetailPanel(post) {
   await loadComments(post.id);
 }
 
+async function reloadSelectedPost(postId) {
+  await loadPosts();
+  const refreshed = allPosts.find((x) => x.id === postId) || null;
+  if (refreshed) {
+    selectedPost = refreshed;
+  }
+  return refreshed;
+}
+
 function closeDetailPanel() {
   detailPanel.classList.add("hidden");
   selectedPost = null;
+  closeEditPostSection();
 }
 
 async function loadComments(postId) {
@@ -165,13 +250,49 @@ async function loadComments(postId) {
     return;
   }
 
-  commentList.innerHTML = comments.map((comment) => `
-    <div class="comment-item">
-      <div class="comment-name">${escapeHtml(comment.commenter_name)}</div>
-      <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
-      <div class="comment-time">${formatDate(comment.created_at)}</div>
-    </div>
-  `).join("");
+  commentList.innerHTML = comments.map((comment) => {
+    const canDelete = currentUser && comment.user_id === currentUser.id;
+
+    return `
+      <div class="comment-item">
+        <div class="comment-name">${escapeHtml(comment.commenter_name)}</div>
+        <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
+        <div class="comment-time">${formatDate(comment.created_at)}</div>
+        <div class="comment-actions">
+          ${canDelete ? `<button class="danger comment-delete-btn" data-id="${comment.id}">コメント削除</button>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  bindCommentDeleteButtons();
+}
+
+function bindCommentDeleteButtons() {
+  const buttons = document.querySelectorAll(".comment-delete-btn");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      try {
+        const commentId = Number(button.dataset.id);
+
+        if (!confirm("このコメントを削除しますか？")) {
+          return;
+        }
+
+        await deleteComment(commentId);
+
+        if (selectedPost) {
+          await loadComments(selectedPost.id);
+        }
+
+        alert("コメントを削除しました");
+      } catch (err) {
+        console.error(err);
+        alert(`コメント削除失敗: ${err.message}`);
+      }
+    });
+  });
 }
 
 function renderStars() {
@@ -179,6 +300,14 @@ function renderStars() {
     const rating = Number(btn.dataset.rating);
     btn.textContent = rating <= currentRating ? "★" : "☆";
     btn.classList.toggle("active", rating <= currentRating);
+  });
+}
+
+function renderEditStars() {
+  editStarButtons.forEach((btn) => {
+    const rating = Number(btn.dataset.rating);
+    btn.textContent = rating <= currentEditRating ? "★" : "☆";
+    btn.classList.toggle("active", rating <= currentEditRating);
   });
 }
 
@@ -190,6 +319,13 @@ starButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     currentRating = Number(btn.dataset.rating);
     renderStars();
+  });
+});
+
+editStarButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    currentEditRating = Number(btn.dataset.rating);
+    renderEditStars();
   });
 });
 
@@ -282,6 +418,52 @@ savePostBtn.addEventListener("click", async () => {
     console.error(err);
     alert(`投稿失敗: ${err.message}`);
   }
+});
+
+saveEditPostBtn.addEventListener("click", async () => {
+  try {
+    if (!currentUser || !selectedPost) {
+      alert("編集対象の投稿がありません");
+      return;
+    }
+
+    const posterName = editPosterNameInput.value.trim();
+    const shopName = editShopNameInput.value.trim();
+
+    if (!posterName) {
+      alert("投稿者名を入力してください");
+      return;
+    }
+
+    if (!shopName) {
+      alert("店舗名を入力してください");
+      return;
+    }
+
+    if (currentEditRating < 1 || currentEditRating > 5) {
+      alert("評価を選んでください");
+      return;
+    }
+
+    const updated = await updatePost({
+      postId: selectedPost.id,
+      posterName,
+      shopName,
+      rating: currentEditRating
+    });
+
+    closeEditPostSection();
+    await loadPosts();
+    await openDetailPanel(updated);
+    alert("投稿を更新しました");
+  } catch (err) {
+    console.error(err);
+    alert(`投稿更新失敗: ${err.message}`);
+  }
+});
+
+cancelEditPostBtn.addEventListener("click", () => {
+  closeEditPostSection();
 });
 
 clearPinBtn.addEventListener("click", () => {
