@@ -10,7 +10,7 @@ import {
   uploadPhoto,
   createPost,
   fetchPosts,
-  deletePost
+  deletePostWithPhoto
 } from "./posts.js";
 import {
   fetchComments,
@@ -133,12 +133,13 @@ async function openDetailPanel(post) {
     const deleteBtn = document.getElementById("delete-post-btn");
     deleteBtn.addEventListener("click", async () => {
       try {
-        if (!confirm("この投稿を削除しますか？")) {
+        if (!confirm("この投稿を削除しますか？\n画像も削除されます。")) {
           return;
         }
 
-        await deletePost(post.id);
+        await deletePostWithPhoto(post);
         detailPanel.classList.add("hidden");
+        selectedPost = null;
         await loadPosts();
         alert("削除しました");
       } catch (err) {
