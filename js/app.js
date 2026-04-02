@@ -4,7 +4,8 @@ import {
   refreshMapSize,
   clearPostMarkers,
   addPostMarker,
-  clearTempMarker
+  clearTempMarker,
+  focusPost
 } from "./map.js";
 import {
   uploadPhoto,
@@ -32,6 +33,14 @@ const passwordInput = document.getElementById("password");
 const loginBtn = document.getElementById("login-btn");
 const logoutBtn = document.getElementById("logout-btn");
 const userInfo = document.getElementById("user-info");
+
+const searchShopNameInput = document.getElementById("search-shop-name");
+const searchPosterNameInput = document.getElementById("search-poster-name");
+const searchRatingMinInput = document.getElementById("search-rating-min");
+const searchBtn = document.getElementById("search-btn");
+const clearSearchBtn = document.getElementById("clear-search-btn");
+const searchSummary = document.getElementById("search-summary");
+const searchResultList = document.getElementById("search-result-list");
 
 const postFormPanel = document.getElementById("post-form-panel");
 const closeFormBtn = document.getElementById("close-form-btn");
@@ -65,6 +74,7 @@ let currentRating = 0;
 let currentEditRating = 0;
 let selectedPost = null;
 let allPosts = [];
+let filteredPosts = [];
 
 initMap((lat, lng) => {
   latitudeInput.value = lat.toFixed(6);
@@ -97,14 +107,70 @@ async function refreshUI() {
 
 async function loadPosts() {
   allPosts = await fetchPosts();
+  applySearch();
+}
 
+function applySearch() {
+  const shopKeyword = searchShopNameInput.value.trim().toLowerCase();
+  const posterKeyword = searchPosterNameInput.value.trim().toLowerCase();
+  const minRating = searchRatingMinInput.value ? Number(searchRatingMinInput.value) : null;
+
+  filteredPosts = allPosts.filter((post) => {
+    const shopMatch = !shopKeyword || (post.shop_name ?? "").toLowerCase().includes(shopKeyword);
+    const posterMatch = !posterKeyword || (post.poster_name ?? "").toLowerCase().includes(posterKeyword);
+    const ratingMatch = minRating === null || Number(post.rating) >= minRating;
+    return shopMatch && posterMatch && ratingMatch;
+  });
+
+  renderMarkers(filteredPosts);
+  renderSearchSummary(filteredPosts.length, allPosts.length);
+  renderSearchResults(filteredPosts);
+}
+
+function renderMarkers(posts) {
   clearPostMarkers();
 
-  for (const post of allPosts) {
+  for (const post of posts) {
     addPostMarker(post, async (clickedPost) => {
       await openDetailPanel(clickedPost);
     });
   }
+}
+
+function renderSearchSummary(filteredCount, totalCount) {
+  if (filteredCount === totalCount) {
+    searchSummary.textContent = `全件表示中（${totalCount}件）`;
+  } else {
+    searchSummary.textContent = `検索結果 ${filteredCount}件 / 全${totalCount}件`;
+  }
+}
+
+function renderSearchResults(posts) {
+  if (!posts.length) {
+    searchResultList.innerHTML = `<div class="empty-text">該当する投稿はありません</div>`;
+    return;
+  }
+
+  searchResultList.innerHTML = posts.map((post) => `
+    <div class="search-result-item" data-id="${post.id}">
+      <div class="search-result-title">${escapeHtml(post.shop_name)}</div>
+      <div class="search-result-meta">
+        投稿者: ${escapeHtml(post.poster_name)} / 評価: ${renderStarsText(post.rating)}
+      </div>
+    </div>
+  `).join("");
+
+  const items = document.querySelectorAll(".search-result-item");
+  items.forEach((item) => {
+    item.addEventListener("click", async () => {
+      const postId = Number(item.dataset.id);
+      const post = filteredPosts.find((x) => x.id === postId);
+      if (!post) return;
+
+      focusPost(post);
+      await openDetailPanel(post);
+    });
+  });
 }
 
 function openPostFormPanel() {
@@ -329,6 +395,29 @@ editStarButtons.forEach((btn) => {
   });
 });
 
+searchBtn.addEventListener("click", () => {
+  applySearch();
+});
+
+clearSearchBtn.addEventListener("click", () => {
+  searchShopNameInput.value = "";
+  searchPosterNameInput.value = "";
+  searchRatingMinInput.value = "";
+  applySearch();
+});
+
+searchShopNameInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") applySearch();
+});
+
+searchPosterNameInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") applySearch();
+});
+
+searchRatingMinInput.addEventListener("change", () => {
+  applySearch();
+});
+
 loginBtn.addEventListener("click", async () => {
   try {
     const email = emailInput.value.trim();
@@ -412,6 +501,7 @@ savePostBtn.addEventListener("click", async () => {
     resetPostForm();
     closePostFormPanel();
     await loadPosts();
+    focusPost(created);
     await openDetailPanel(created);
     alert("投稿しました");
   } catch (err) {
@@ -454,6 +544,7 @@ saveEditPostBtn.addEventListener("click", async () => {
 
     closeEditPostSection();
     await loadPosts();
+    focusPost(updated);
     await openDetailPanel(updated);
     alert("投稿を更新しました");
   } catch (err) {
