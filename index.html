@@ -2,15 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>神田ランチマップ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>建デポランチマップ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
   <div id="login-screen" class="login-screen">
     <div class="login-card">
-      <h1>神田ランチマップ</h1>
+      <h1>建デポランチマップ</h1>
       <div class="form-row">
         <label for="email">メール</label>
         <input type="email" id="email" placeholder="your@example.com" />
@@ -30,14 +30,20 @@
     <div id="map"></div>
 
     <div class="top-bar">
-      <div class="brand">神田ランチマップ</div>
+      <div class="brand">建デポランチマップ</div>
       <div class="top-actions">
+        <button id="toggle-search-panel-btn" class="secondary mobile-only">検索</button>
         <span id="user-info"></span>
         <button id="logout-btn" class="secondary">ログアウト</button>
       </div>
     </div>
 
     <div id="search-panel" class="search-panel">
+      <div class="search-panel-header mobile-only">
+        <div class="search-panel-title">検索</div>
+        <button id="close-search-panel-btn" class="icon-btn">×</button>
+      </div>
+
       <div class="search-block">
         <div class="search-block-title">投稿検索</div>
         <div class="search-row">
@@ -75,7 +81,7 @@
         <div class="search-row nominatim-row">
           <div class="search-field">
             <label for="place-search-input">店舗候補 / 地名 / 住所</label>
-            <input type="text" id="place-search-input" placeholder="例: 神田 カレー / 秋葉原 ラーメン" />
+            <input type="text" id="place-search-input" placeholder="例: 東京牧場　無料の範囲だから期待しないで" />
           </div>
           <div class="search-buttons">
             <button id="place-search-btn">場所検索</button>
@@ -91,10 +97,11 @@
     </div>
 
     <div id="hint-box" class="hint-box">
-      地図をクリックすると新しい投稿フォームが開きます
+      地図をタップすると新しい投稿フォームが開きます
     </div>
 
     <div id="post-form-panel" class="side-panel hidden">
+      <div class="panel-handle mobile-only"></div>
       <div class="panel-header">
         <h2>新規投稿</h2>
         <button id="close-form-btn" class="icon-btn">×</button>
@@ -143,6 +150,7 @@
     </div>
 
     <div id="detail-panel" class="side-panel hidden">
+      <div class="panel-handle mobile-only"></div>
       <div class="panel-header">
         <h2>投稿詳細</h2>
         <button id="close-detail-btn" class="icon-btn">×</button>
