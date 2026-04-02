@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>建デ本社員用（テスト）</title>
+  <title>神田ランチマップ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
   <div id="login-screen" class="login-screen">
     <div class="login-card">
-      <h1>建デポ神田ランチマップ</h1>
+      <h1>神田ランチマップ</h1>
       <div class="form-row">
         <label for="email">メール</label>
         <input type="email" id="email" placeholder="your@example.com" />
@@ -96,6 +96,35 @@
       </div>
 
       <div id="detail-content" class="detail-content"></div>
+
+      <div id="edit-post-section" class="edit-post-section hidden">
+        <h3>投稿編集</h3>
+        <div class="form-row">
+          <label for="edit-poster-name">投稿者名</label>
+          <input type="text" id="edit-poster-name" />
+        </div>
+
+        <div class="form-row">
+          <label for="edit-shop-name">店舗名</label>
+          <input type="text" id="edit-shop-name" />
+        </div>
+
+        <div class="form-row">
+          <label>評価</label>
+          <div id="edit-rating-stars" class="rating-stars">
+            <button type="button" class="edit-star-btn" data-rating="1">☆</button>
+            <button type="button" class="edit-star-btn" data-rating="2">☆</button>
+            <button type="button" class="edit-star-btn" data-rating="3">☆</button>
+            <button type="button" class="edit-star-btn" data-rating="4">☆</button>
+            <button type="button" class="edit-star-btn" data-rating="5">☆</button>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="save-edit-post-btn">編集内容を保存</button>
+          <button id="cancel-edit-post-btn" class="secondary">編集をやめる</button>
+        </div>
+      </div>
 
       <div class="comment-section">
         <h3>コメント</h3>
