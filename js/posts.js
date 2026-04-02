@@ -47,3 +47,12 @@ export async function fetchLunchSpots() {
   if (error) throw error;
   return data;
 }
+
+export async function deleteLunchSpot(id) {
+  const { error } = await supabase
+    .from("lunch_spots")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
