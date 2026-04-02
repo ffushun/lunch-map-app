@@ -38,35 +38,56 @@
     </div>
 
     <div id="search-panel" class="search-panel">
-      <div class="search-row">
-        <div class="search-field">
-          <label for="search-shop-name">店舗名</label>
-          <input type="text" id="search-shop-name" placeholder="例: ラーメン、食堂" />
+      <div class="search-block">
+        <div class="search-block-title">投稿検索</div>
+        <div class="search-row">
+          <div class="search-field">
+            <label for="search-shop-name">店舗名</label>
+            <input type="text" id="search-shop-name" placeholder="例: ラーメン、食堂" />
+          </div>
+          <div class="search-field">
+            <label for="search-poster-name">投稿者名</label>
+            <input type="text" id="search-poster-name" placeholder="例: 福田" />
+          </div>
+          <div class="search-field small">
+            <label for="search-rating-min">評価以上</label>
+            <select id="search-rating-min">
+              <option value="">指定なし</option>
+              <option value="1">★1以上</option>
+              <option value="2">★2以上</option>
+              <option value="3">★3以上</option>
+              <option value="4">★4以上</option>
+              <option value="5">★5のみ</option>
+            </select>
+          </div>
+          <div class="search-buttons">
+            <button id="search-btn">検索</button>
+            <button id="clear-search-btn" class="secondary">クリア</button>
+          </div>
         </div>
-        <div class="search-field">
-          <label for="search-poster-name">投稿者名</label>
-          <input type="text" id="search-poster-name" placeholder="例: 福田" />
-        </div>
-        <div class="search-field small">
-          <label for="search-rating-min">評価以上</label>
-          <select id="search-rating-min">
-            <option value="">指定なし</option>
-            <option value="1">★1以上</option>
-            <option value="2">★2以上</option>
-            <option value="3">★3以上</option>
-            <option value="4">★4以上</option>
-            <option value="5">★5のみ</option>
-          </select>
-        </div>
-        <div class="search-buttons">
-          <button id="search-btn">検索</button>
-          <button id="clear-search-btn" class="secondary">クリア</button>
-        </div>
+
+        <div id="search-summary" class="search-summary">全件表示中</div>
+        <div id="search-result-list" class="search-result-list"></div>
       </div>
 
-      <div id="search-summary" class="search-summary">全件表示中</div>
+      <div class="search-block nominatim-block">
+        <div class="search-block-title">場所検索（Nominatim）</div>
+        <div class="search-row nominatim-row">
+          <div class="search-field">
+            <label for="place-search-input">店舗候補 / 地名 / 住所</label>
+            <input type="text" id="place-search-input" placeholder="例: 神田 カレー / 秋葉原 ラーメン" />
+          </div>
+          <div class="search-buttons">
+            <button id="place-search-btn">場所検索</button>
+            <button id="clear-place-search-btn" class="secondary">候補クリア</button>
+          </div>
+        </div>
 
-      <div id="search-result-list" class="search-result-list"></div>
+        <div class="search-note">
+          検索候補をクリックすると、その位置に仮ピンを立てて投稿フォームを開きます
+        </div>
+        <div id="place-search-result-list" class="search-result-list"></div>
+      </div>
     </div>
 
     <div id="hint-box" class="hint-box">
