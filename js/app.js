@@ -31,14 +31,21 @@ initMap((lat, lng) => {
 });
 
 async function refreshUI() {
-  currentUser = await getCurrentUser();
+  try {
+    currentUser = await getCurrentUser();
 
-  if (currentUser) {
-    authSection.classList.add("hidden");
-    appSection.classList.remove("hidden");
-    userInfo.textContent = currentUser.email;
-    await loadPosts();
-  } else {
+    if (currentUser) {
+      authSection.classList.add("hidden");
+      appSection.classList.remove("hidden");
+      userInfo.textContent = currentUser.email;
+      await loadPosts();
+    } else {
+      authSection.classList.remove("hidden");
+      appSection.classList.add("hidden");
+      userInfo.textContent = "";
+    }
+  } catch (err) {
+    console.error("refreshUI error:", err);
     authSection.classList.remove("hidden");
     appSection.classList.add("hidden");
     userInfo.textContent = "";
