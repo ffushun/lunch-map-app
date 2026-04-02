@@ -1,5 +1,5 @@
 import { signUp, signIn, signOut, getCurrentUser, ensureProfile } from "./auth.js";
-import { initMap, clearMarkers, addMarker } from "./map.js";
+import { initMap, refreshMapSize, clearMarkers, addMarker } from "./map.js";
 import { uploadPhoto, createLunchSpot, fetchLunchSpots } from "./posts.js";
 
 const authSection = document.getElementById("auth-section");
