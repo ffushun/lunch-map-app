@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>昼食おすすめ</title>
+  <title>昼食おすすめマップ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
   <header class="app-header">
-    <h1>昼食おすすめマプ</h1>
+    <h1>昼食おすすめマップ</h1>
     <div class="header-actions">
       <span id="user-info"></span>
       <button id="logout-btn" class="secondary">ログアウト</button>
@@ -18,7 +18,7 @@
 
   <main class="container">
     <section id="auth-section" class="card">
-      <h2>ログイン / 新規登録</h2>
+      <h2>ログイン</h2>
       <div class="form-row">
         <label for="email">メール</label>
         <input type="email" id="email" placeholder="your@example.com" />
@@ -29,7 +29,6 @@
       </div>
       <div class="button-row">
         <button id="login-btn">ログイン</button>
-        
       </div>
     </section>
 
@@ -60,9 +59,10 @@
             </div>
             <div class="button-row">
               <button id="post-btn">投稿する</button>
+              <button id="clear-pin-btn" class="secondary">仮ピン解除</button>
               <button id="reload-btn" class="secondary">再読み込み</button>
             </div>
-            <p class="note">地図クリックで緯度・経度を入力できます</p>
+            <p class="note">地図をクリックすると仮ピンが立ち、緯度・経度が自動入力されます</p>
           </div>
 
           <div class="card">
@@ -72,7 +72,7 @@
         </div>
 
         <div class="map-panel card">
-          <h2>マップ</h2>
+          <h2>マップ（神田駅周辺）</h2>
           <div id="map"></div>
         </div>
       </div>
