@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>昼食おすすめマップ</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>昼食おすすめマップ</h1>
+    <div class="header-actions">
+      <span id="user-info"></span>
+      <button id="logout-btn" class="secondary">ログアウト</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="auth-section" class="card">
+      <h2>ログイン / 新規登録</h2>
+      <div class="form-row">
+        <label for="email">メール</label>
+        <input type="email" id="email" placeholder="your@example.com" />
+      </div>
+      <div class="form-row">
+        <label for="password">パスワード</label>
+        <input type="password" id="password" placeholder="********" />
+      </div>
+      <div class="button-row">
+        <button id="login-btn">ログイン</button>
+        <button id="signup-btn" class="secondary">新規登録</button>
+      </div>
+    </section>
+
+    <section id="app-section" class="hidden">
+      <div class="grid">
+        <div class="left-panel">
+          <div class="card">
+            <h2>新規投稿</h2>
+            <div class="form-row">
+              <label for="shop-name">店名</label>
+              <input type="text" id="shop-name" placeholder="例: ○○食堂" />
+            </div>
+            <div class="form-row">
+              <label for="comment">コメント</label>
+              <textarea id="comment" rows="4" placeholder="おすすめポイント"></textarea>
+            </div>
+            <div class="form-row">
+              <label for="latitude">緯度</label>
+              <input type="number" id="latitude" step="any" />
+            </div>
+            <div class="form-row">
+              <label for="longitude">経度</label>
+              <input type="number" id="longitude" step="any" />
+            </div>
+            <div class="form-row">
+              <label for="photo">写真</label>
+              <input type="file" id="photo" accept="image/*" />
+            </div>
+            <div class="button-row">
+              <button id="post-btn">投稿する</button>
+              <button id="reload-btn" class="secondary">再読み込み</button>
+            </div>
+            <p class="note">地図クリックで緯度・経度を入力できます</p>
+          </div>
+
+          <div class="card">
+            <h2>投稿一覧</h2>
+            <div id="post-list"></div>
+          </div>
+        </div>
+
+        <div class="map-panel card">
+          <h2>マップ</h2>
+          <div id="map"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
