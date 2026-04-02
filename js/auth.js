@@ -24,13 +24,16 @@ export async function signOut() {
 }
 
 export async function getCurrentUser() {
-  const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser();
 
-  if (error) throw error;
-  return user;
+  if (error) {
+    if (error.name === "AuthSessionMissingError") {
+      return null;
+    }
+    throw error;
+  }
+
+  return data.user ?? null;
 }
 
 export async function ensureProfile(user) {
